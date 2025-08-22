@@ -164,11 +164,15 @@ function App() {
 
   const getCurrentDay = () => {
     if (!challengeData.startDate) return 1;
-    const start = new Date(challengeData.startDate);
-    const today = new Date();
-    const diffTime = Math.abs(today.getTime() - start.getTime());
-    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-    return Math.min(diffDays, 75);
+    
+    // Count the number of actual entries to determine current day
+    const entryCount = Object.keys(challengeData.entries).length;
+    
+    // If no entries exist, we're on day 1
+    if (entryCount === 0) return 1;
+    
+    // Otherwise, the current day is the number of entries + 1 (next day to fill)
+    return Math.min(entryCount + 1, 75);
   };
 
   if (isShareMode) {
