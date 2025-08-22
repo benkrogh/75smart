@@ -325,7 +325,7 @@ const Dashboard: React.FC<DashboardProps> = ({ challengeData }) => {
                   fill="#8884d8"
                   dataKey="value"
                 >
-                  {workoutTypeData.map((entry, index) => (
+                  {workoutTypeData.map((_, index) => (
                     <Cell 
                       key={`cell-${index}`} 
                       fill={index === 0 ? "var(--color-strength)" : "var(--color-recovery)"} 

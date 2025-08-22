@@ -2,7 +2,7 @@
 
 import * as React from "react"
 import * as RechartsPrimitive from "recharts"
-import { Payload } from "recharts/types/component/DefaultLegendContent"
+// import { Payload } from "recharts/types/component/DefaultLegendContent"
 
 import { cn } from "@/lib/utils"
 

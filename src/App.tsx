@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Share2 } from 'lucide-react';
+import { Share2, Download } from 'lucide-react';
 import DailyInput from '@/components/DailyInput';
 import Dashboard from '@/components/Dashboard';
 import HistoryView from '@/components/HistoryView';
@@ -42,27 +42,46 @@ function App() {
     targetCalories: 2000,
   });
 
-  // Load data from localStorage on mount
+  // Load data from data.json first, then localStorage on mount
   useEffect(() => {
-    const savedData = localStorage.getItem(STORAGE_KEY);
-    const migrationComplete = localStorage.getItem(MIGRATION_KEY);
-    
-    if (savedData) {
+    const loadData = async () => {
       try {
-        let data = JSON.parse(savedData);
-        
-        // Perform migration if not already done
-        if (!migrationComplete) {
-          data = migrateTimeData(data);
-          localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
-          localStorage.setItem(MIGRATION_KEY, 'true');
+        // Try to fetch from public data.json first
+        const response = await fetch('/data.json');
+        if (response.ok) {
+          const remoteData = await response.json();
+          setChallengeData(remoteData);
+          console.log('Loaded data from remote data.json');
+          return;
         }
-        
-        setChallengeData(data);
       } catch (error) {
-        console.error('Failed to load saved data:', error);
+        console.log('No remote data.json found, falling back to localStorage');
       }
-    }
+
+      // Fallback to localStorage
+      const savedData = localStorage.getItem(STORAGE_KEY);
+      const migrationComplete = localStorage.getItem(MIGRATION_KEY);
+      
+      if (savedData) {
+        try {
+          let data = JSON.parse(savedData);
+          
+          // Perform migration if not already done
+          if (!migrationComplete) {
+            data = migrateTimeData(data);
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+            localStorage.setItem(MIGRATION_KEY, 'true');
+          }
+          
+          setChallengeData(data);
+          console.log('Loaded data from localStorage');
+        } catch (error) {
+          console.error('Failed to load saved data:', error);
+        }
+      }
+    };
+
+    loadData();
   }, []);
 
   // Save data to localStorage whenever challengeData changes
@@ -112,6 +131,35 @@ function App() {
     navigator.clipboard.writeText(shareUrl).then(() => {
       alert('Shareable link copied to clipboard!');
     });
+  };
+
+  const handleExportData = () => {
+    // Get current localStorage data (this includes all local changes)
+    const savedData = localStorage.getItem(STORAGE_KEY);
+    if (!savedData) {
+      alert('No data to export. Please add some entries first.');
+      return;
+    }
+
+    try {
+      // Validate JSON and format it nicely
+      const data = JSON.parse(savedData);
+      const formattedJson = JSON.stringify(data, null, 2);
+      
+      // Copy to clipboard
+      navigator.clipboard.writeText(formattedJson).then(() => {
+        alert('Data exported to clipboard! Paste this into public/data.json and commit to update the deployed version.');
+      }).catch(() => {
+        // Fallback: show data in a prompt for manual copying
+        const userCopy = confirm('Copy to clipboard failed. Would you like to see the data to copy manually?');
+        if (userCopy) {
+          prompt('Copy this JSON data to public/data.json:', formattedJson);
+        }
+      });
+    } catch (error) {
+      console.error('Failed to export data:', error);
+      alert('Failed to export data. Please check the console for details.');
+    }
   };
 
   const getCurrentDay = () => {
@@ -177,10 +225,16 @@ function App() {
               </span>
             </div>
           </div>
-          <Button onClick={handleShare} variant="outline" className="gap-2 shrink-0">
-            <Share2 className="h-4 w-4" />
-            Share Dashboard
-          </Button>
+          <div className="flex gap-2 shrink-0">
+            <Button onClick={handleExportData} variant="outline" className="gap-2">
+              <Download className="h-4 w-4" />
+              Export Data
+            </Button>
+            <Button onClick={handleShare} variant="outline" className="gap-2">
+              <Share2 className="h-4 w-4" />
+              Share Dashboard
+            </Button>
+          </div>
         </div>
 
         <Tabs defaultValue="input" className="space-y-8">

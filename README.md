@@ -253,6 +253,13 @@ This will:
 2. Copy the generated link
 3. Share with friends - they'll see your dashboard without editing access
 
+### Exporting Data for Deployment
+1. Click the **Export Data** button
+2. JSON data is copied to clipboard
+3. Paste into `public/data.json`
+4. Commit and push to update deployed version
+5. Deployed site will show your latest progress
+
 ## The 75 SMART Challenge
 
 ### Core Principles
@@ -268,14 +275,66 @@ This will:
 3. **Track honestly** - Accurate data leads to real results
 4. **Progress photos and measurements** - Take them every 2 weeks
 
-## Data Storage
+## Data Storage & Persistence
 
-All data is stored in `localStorage` using the key `75-smart-challenge-data`. The data structure follows the `ChallengeData` interface with entries indexed by date strings.
+### Data Loading Priority
+1. **Remote Data** (`public/data.json`) - Primary source for deployed version
+2. **Local Storage** (`localStorage`) - Fallback and working storage for daily entries
+3. **Default State** - Empty challenge with today's date
 
-### Data Persistence
-- **Auto-save**: All entries automatically saved to localStorage
-- **Data Format**: JSON serialized `ChallengeData` object
-- **Backup**: Export functionality available through shareable URLs
+### Data Architecture
+The application uses a hybrid approach:
+- **Production/Shared View**: Loads from `public/data.json` (read-only)
+- **Local Development**: Uses `localStorage` for real-time updates
+- **Data Export**: Manual sync from localStorage to `data.json`
+
+### Data Persistence Workflow
+1. **Daily Usage**: Input data through UI → saved to localStorage
+2. **Export**: Click "Export Data" button → copies localStorage JSON
+3. **Deploy Update**: Paste exported JSON into `public/data.json` → commit/push
+4. **Public Access**: Deployed site loads updated data from `data.json`
+
+### Data Structure
+All data follows the `ChallengeData` interface:
+```typescript
+interface ChallengeData {
+  startDate: string;      // ISO date string (e.g., "2024-01-15")
+  entries: Record<string, DailyEntry>; // key is date string
+  targetCalories: number; // default 2000
+}
+```
+
+### Storage Keys
+- **localStorage**: `75-smart-challenge-data`
+- **Migration**: `75-smart-challenge-migration-v1`
+- **Remote**: `/public/data.json`
+
+## Deployment Options
+
+### Static Hosting (Recommended)
+The app is designed for static hosting with JSON data files:
+
+**Deployment Platforms:**
+- **Netlify**: Automatic deployments from GitHub, free tier
+- **Vercel**: Zero-config deployments, automatic HTTPS
+- **GitHub Pages**: Free hosting directly from repository
+- **Firebase Hosting**: Google's fast global CDN
+
+**Deployment Steps:**
+1. Build the application: `npm run build`
+2. Deploy `dist/` folder to your hosting platform
+3. Update `public/data.json` to sync your progress
+4. Configure automatic deployments from your Git repository
+
+### Environment Configuration
+- **No Environment Variables**: All configuration in code
+- **No Backend Required**: Pure frontend with JSON data
+- **HTTPS Recommended**: For clipboard API and modern web features
+
+### Data Sync Strategy
+- **Development**: Use UI normally, data saves to localStorage
+- **Production Update**: Export localStorage → update data.json → commit
+- **Automation**: Consider GitHub Actions to periodically sync data
 
 ## Development
 
@@ -310,9 +369,54 @@ All data is stored in `localStorage` using the key `75-smart-challenge-data`. Th
 - **Styling**: Tailwind CSS classes, ShadCN component variants
 - **State Management**: React hooks (useState, useEffect) with localStorage
 - **File Naming**: PascalCase for components, camelCase for utilities
+- **Data Loading**: Async/await pattern for fetching remote data
+- **Error Handling**: Try/catch blocks with console logging and user feedback
+
+### Data Management Patterns
+- **Hybrid Storage**: Remote JSON file (public) + localStorage (working)
+- **Priority Loading**: Try remote data.json first, fallback to localStorage
+- **Export Functionality**: One-click copy of localStorage to clipboard
+- **Migration Support**: Automatic data format migrations with version tracking
+
+### AI Development Guidelines
+For future AI agents working on this codebase:
+
+#### Architecture Understanding
+- **Main App**: `src/App.tsx` - handles data loading, state management, routing
+- **Components**: Feature-based components in `src/components/`
+- **UI Library**: ShadCN components in `src/components/ui/`
+- **Types**: Centralized in `src/types/index.ts`
+- **Utils**: Helper functions in `src/lib/utils.ts`
+
+#### Data Flow
+1. **Load**: `data.json` → localStorage → default state
+2. **Update**: UI → state → localStorage (auto-save)
+3. **Export**: localStorage → clipboard → manual paste to data.json
+4. **Share**: Generate URL with `?share=true` parameter
+
+#### Key Implementation Details
+- **Time Storage**: All times stored in seconds, converted to MM:SS for display
+- **Date Handling**: ISO date strings (YYYY-MM-DD) as keys
+- **Chart Data**: Computed from entries in useMemo hooks
+- **Form Validation**: Minimum 20 minutes for run time
+- **Migration**: Automatic data format updates with version checking
+
+#### Adding Features
+- **New UI Components**: Use existing ShadCN components when possible
+- **Data Fields**: Update `types/index.ts` interfaces first
+- **Charts**: Use Recharts with consistent styling patterns
+- **Storage**: Maintain backward compatibility with migration functions
+
+#### Testing Approach
+- **Manual Testing**: All three tabs (Input, History, Dashboard)
+- **Data Persistence**: Test localStorage and data.json loading
+- **Share Mode**: Verify read-only dashboard works
+- **Export Function**: Confirm JSON clipboard copy works
+- **Responsive**: Test on mobile and desktop viewports
 
 ## Contributing
 
+### For Human Developers
 1. Fork the repository
 2. Create a feature branch
 3. Make your changes following the established patterns:
@@ -322,6 +426,25 @@ All data is stored in `localStorage` using the key `75-smart-challenge-data`. Th
    - Update type definitions as needed
 4. Test thoroughly (all tabs, data persistence, sharing)
 5. Submit a pull request
+
+### For AI Agents
+1. **Read the Architecture**: Understand the hybrid data storage model
+2. **Follow Type Safety**: Update `src/types/index.ts` for any data model changes
+3. **Maintain Backward Compatibility**: Use migration functions for breaking changes
+4. **Test Export Flow**: Ensure localStorage → JSON export works correctly
+5. **Preserve UI Patterns**: Follow existing ShadCN component usage
+6. **Update Documentation**: Keep this README current with any architectural changes
+
+### Testing Checklist
+- [ ] All three tabs load and function correctly
+- [ ] Daily input saves to localStorage
+- [ ] Data export copies valid JSON to clipboard
+- [ ] Share mode shows read-only dashboard
+- [ ] Remote data.json loading works (if file exists)
+- [ ] localStorage fallback works (if no remote data)
+- [ ] Charts render with proper data
+- [ ] Form validation prevents invalid entries
+- [ ] Responsive design works on mobile/desktop
 
 ## License
 

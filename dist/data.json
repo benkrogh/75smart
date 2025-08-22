@@ -1,0 +1,63 @@
+{
+  "startDate": "2024-01-15",
+  "targetCalories": 2000,
+  "entries": {
+    "2024-01-15": {
+      "date": "2024-01-15",
+      "weight": 180,
+      "calories": 1950,
+      "run": {
+        "time": 1500,
+        "distance": 2.5,
+        "calories": 300,
+        "avgPacePerMile": "10:00",
+        "elevationGain": 50,
+        "avgHeartRate": 150
+      },
+      "additionalWorkout": {
+        "type": "strength",
+        "length": 20,
+        "calories": 150,
+        "avgHeartRate": 140
+      }
+    },
+    "2024-01-16": {
+      "date": "2024-01-16",
+      "weight": 179.5,
+      "calories": 2100,
+      "run": {
+        "time": 1320,
+        "distance": 2.2,
+        "calories": 280,
+        "avgPacePerMile": "10:00",
+        "elevationGain": 30,
+        "avgHeartRate": 145
+      },
+      "additionalWorkout": {
+        "type": "recovery",
+        "length": 15,
+        "calories": 100,
+        "avgHeartRate": 120
+      }
+    },
+    "2024-01-17": {
+      "date": "2024-01-17",
+      "weight": 179.2,
+      "calories": 1980,
+      "run": {
+        "time": 1800,
+        "distance": 3.0,
+        "calories": 350,
+        "avgPacePerMile": "10:00",
+        "elevationGain": 75,
+        "avgHeartRate": 155
+      },
+      "additionalWorkout": {
+        "type": "strength",
+        "length": 25,
+        "calories": 180,
+        "avgHeartRate": 145
+      }
+    }
+  }
+}
